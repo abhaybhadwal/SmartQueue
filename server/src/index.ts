@@ -688,6 +688,30 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
+// --- Auto-Seeding ---
+async function seedAdmin() {
+  try {
+    const adminEmail = 'prince54918@gmail.com';
+    const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+    
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('Abhay@00', 10);
+      await prisma.user.create({
+        data: {
+          name: 'Abhay Bhadwal',
+          email: adminEmail,
+          password: hashedPassword,
+          role: 'admin',
+        },
+      });
+      console.log('✅ Default admin user created: prince54918@gmail.com');
+    }
+  } catch (error) {
+    console.error('❌ Failed to seed admin user:', error);
+  }
+}
+
+httpServer.listen(PORT, async () => {
+  await seedAdmin();
   console.log(`Server running on port ${PORT}`);
 });
