@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  LayoutDashboard, 
   Ticket, 
   Clock, 
   History, 
@@ -11,8 +10,6 @@ import {
   Star,
   PlusCircle,
   Bell,
-  TrendingUp,
-  User,
   ArrowUpRight,
   ArrowLeft,
   Zap
