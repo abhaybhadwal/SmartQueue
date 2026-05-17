@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  counters    Counter[]
+  tokens      Token[]
+  metrics     WaitTimeMetric?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Counter {
+  id        String   @id @default(uuid())
+  name      String
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  status    String   @default("active") // active, inactive
+  tokens    Token[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Token {
+  id          String    @id @default(uuid())
+  number      Int
+  serviceId   String
+  service     Service   @relation(fields: [serviceId], references: [id])
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  phoneNumber String?   // For guest users or direct SMS updates
+  counterId   String?
+  counter     Counter?  @relation(fields: [counterId], references: [id])
+  status      String    @default("waiting") // waiting, serving, served, no-show
+  issuedAt  DateTime  @default(now())
+  calledAt  DateTime?
+  servedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model WaitTimeMetric {
+  id                 String   @id @default(uuid())
+  serviceId          String   @unique
+  service            Service  @relation(fields: [serviceId], references: [id])
+  averageServiceTime Float    // in seconds
+  totalTokensServed  Int
+  lastUpdatedAt      DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String?
+  email        String   @unique
+  phoneNumber  String?  @unique
+  password     String
+  profileImage String?
+  role         String   @default("user") // admin, user
+  tokens       Token[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
