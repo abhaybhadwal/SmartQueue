@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Users, Clock, QrCode, ArrowLeft, Zap } from 'lucide-react';
+import { Users, Clock, QrCode, ArrowLeft, Zap, History } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
+import { API_BASE_URL } from '../config';
 
 interface Service {
   id: string;
@@ -28,7 +29,7 @@ const Home: React.FC = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/services');
+        const res = await axios.get(`${API_BASE_URL}/api/services`);
         if (isMounted) setServices(res.data);
       } catch (err) {
         console.error('Failed to fetch services', err);
@@ -44,7 +45,7 @@ const Home: React.FC = () => {
     if (isRefresh) setRefreshing(true);
     
     try {
-      const res = await axios.get('http://localhost:3001/api/services');
+      const res = await axios.get(`${API_BASE_URL}/api/services`);
       setServices(res.data);
     } catch (err) {
       console.error('Failed to fetch services', err);
@@ -59,7 +60,7 @@ const Home: React.FC = () => {
     const loadingToast = toast.loading('Synchronizing with queue system...');
     try {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const res = await axios.post('http://localhost:3001/api/tokens', { 
+      const res = await axios.post(`${API_BASE_URL}/api/tokens`, { 
         serviceId, 
         phoneNumber 
       }, config);

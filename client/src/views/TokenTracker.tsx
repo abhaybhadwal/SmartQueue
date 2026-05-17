@@ -2,8 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { socket } from '../socket';
-import { Clock, ArrowLeft, CheckCircle2, X } from 'lucide-react';
+import { Clock, ArrowLeft, CheckCircle2, X, Zap } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import { API_BASE_URL } from '../config';
 
 interface Token {
   id: string;
@@ -27,7 +28,7 @@ const TokenTracker: React.FC = () => {
 
   const fetchToken = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/api/tokens/${id}`);
+      const res = await axios.get(`${API_BASE_URL}/api/tokens/${id}`);
       setToken(res.data);
     } catch (err) {
       console.error('Failed to fetch token', err);
@@ -40,7 +41,7 @@ const TokenTracker: React.FC = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://localhost:3001/api/tokens/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/tokens/${id}`);
         if (isMounted) setToken(res.data);
       } catch (err) {
         console.error('Failed to fetch token', err);

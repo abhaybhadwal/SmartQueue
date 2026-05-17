@@ -10,10 +10,12 @@ import {
   Mail,
   ShieldCheck,
   Zap,
-  Globe
+  Globe,
+  LayoutDashboard
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
+import { API_BASE_URL } from '../config';
 
 const AccountSettings: React.FC = () => {
   const navigate = useNavigate();
@@ -55,7 +57,7 @@ const AccountSettings: React.FC = () => {
 
     try {
       const fullPhone = `${countryCode} ${phoneNumber}`;
-      const res = await axios.put('http://localhost:3001/api/users/profile', 
+      const res = await axios.put(`${API_BASE_URL}/api/users/profile`, 
         { name, phoneNumber: fullPhone, profileImage },
         { headers: { Authorization: `Bearer ${token}` } }
       );

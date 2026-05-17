@@ -4,6 +4,7 @@ import { Mail, Lock, User, UserPlus, ArrowLeft, Zap, CheckCircle2, ShieldCheck, 
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
+import { API_BASE_URL } from '../config';
 
 interface SignupProps {
   role: 'user' | 'staff';
@@ -41,7 +42,7 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:3001/api/auth/signup', { 
+      const res = await axios.post(`${API_BASE_URL}/api/auth/signup`, { 
         name, 
         email, 
         password,

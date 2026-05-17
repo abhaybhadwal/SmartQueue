@@ -16,13 +16,15 @@ import {
   RefreshCw,
   ListRestart,
   Timer,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { socket } from '../socket';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
 import ThemeToggle from '../components/ThemeToggle';
+import { API_BASE_URL } from '../config';
 
 interface Token {
   id: string;
@@ -80,7 +82,7 @@ const AdminDashboard: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analytics' | 'management' | 'system'>(user?.role === 'staff' ? 'management' : 'analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'management' | 'system'>( 'analytics');
   const [users, setUsers] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [newServiceName, setNewServiceName] = useState('');
@@ -96,10 +98,17 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { token, user, logout } = useAuth();
 
+  // Set staff default tab
+  useEffect(() => {
+    if (user?.role === 'staff') {
+      setActiveTab('management');
+    }
+  }, [user]);
+
   const fetchAnalytics = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const res = await axios.get('http://localhost:3001/api/analytics', {
+      const res = await axios.get(`${API_BASE_URL}/api/analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data);
@@ -113,7 +122,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchCounters = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:3001/api/counters', {
+      const res = await axios.get(`${API_BASE_URL}/api/counters`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCounters(res.data);
@@ -125,7 +134,7 @@ const AdminDashboard: React.FC = () => {
   const fetchServices = useCallback(async () => {
     if (user?.role !== 'admin') return;
     try {
-      const res = await axios.get('http://localhost:3001/api/services', {
+      const res = await axios.get(`${API_BASE_URL}/api/services`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setServices(res.data);
@@ -137,7 +146,7 @@ const AdminDashboard: React.FC = () => {
   const fetchUsers = useCallback(async () => {
     if (user?.role !== 'admin') return;
     try {
-      const res = await axios.get('http://localhost:3001/api/users', {
+      const res = await axios.get(`${API_BASE_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);
@@ -148,7 +157,7 @@ const AdminDashboard: React.FC = () => {
 
   const fetchCounterStatus = useCallback(async (id: string) => {
     try {
-      const res = await axios.get(`http://localhost:3001/api/counters/${id}/status`, {
+      const res = await axios.get(`${API_BASE_URL}/api/counters/${id}/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCounterStatus(res.data);
@@ -179,7 +188,7 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     const loadingToast = toast.loading('Creating service node...');
     try {
-      await axios.post('http://localhost:3001/api/services', { name: newServiceName, description: newServiceDesc }, {
+      await axios.post(`${API_BASE_URL}/api/services`, { name: newServiceName, description: newServiceDesc }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNewServiceName('');
@@ -195,7 +204,7 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     const loadingToast = toast.loading('Initializing counter...');
     try {
-      await axios.post('http://localhost:3001/api/counters', { name: newCounterName, serviceId: newCounterServiceId }, {
+      await axios.post(`${API_BASE_URL}/api/counters`, { name: newCounterName, serviceId: newCounterServiceId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNewCounterName('');
@@ -216,7 +225,7 @@ const AdminDashboard: React.FC = () => {
     if (!userToRemove) return;
     const loadingToast = toast.loading('Terminating user session...');
     try {
-      await axios.delete(`http://localhost:3001/api/users/${userToRemove.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/users/${userToRemove.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
@@ -243,7 +252,7 @@ const AdminDashboard: React.FC = () => {
     if (!selectedCounterId || !counterStatus?.nextToken) return;
     const loadingToast = toast.loading('Relaying call signal...');
     try {
-      const res = await axios.post(`http://localhost:3001/api/counters/${selectedCounterId}/call-next`, {}, {
+      const res = await axios.post(`${API_BASE_URL}/api/counters/${selectedCounterId}/call-next`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addActivity('call', res.data.number);
@@ -258,7 +267,7 @@ const AdminDashboard: React.FC = () => {
     if (!counterStatus?.currentToken) return;
     const loadingToast = toast.loading('Finalizing session...');
     try {
-      await axios.post('http://localhost:3001/api/tokens/' + counterStatus.currentToken.id + '/served', {}, {
+      await axios.post(`${API_BASE_URL}/api/tokens/${counterStatus.currentToken.id}/served`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addActivity('serve', counterStatus.currentToken.number);
@@ -273,7 +282,7 @@ const AdminDashboard: React.FC = () => {
     if (!counterStatus?.currentToken) return;
     const loadingToast = toast.loading('Recording no-show status...');
     try {
-      await axios.post('http://localhost:3001/api/tokens/' + counterStatus.currentToken.id + '/no-show', {}, {
+      await axios.post(`${API_BASE_URL}/api/tokens/${counterStatus.currentToken.id}/no-show`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addActivity('no-show', counterStatus.currentToken.number);

@@ -4,6 +4,7 @@ import { Mail, Lock, LogIn, ArrowLeft, ShieldCheck, Briefcase, User as UserIcon,
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
+import { API_BASE_URL } from '../config';
 
 interface LoginProps {
   role: 'user' | 'admin' | 'staff';
@@ -48,7 +49,7 @@ const Login: React.FC<LoginProps> = ({ role }) => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:3001/api/auth/login', { email, password });
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
       const { token, user } = res.data;
 
       if (user.role !== role) {
@@ -144,8 +145,8 @@ const Login: React.FC<LoginProps> = ({ role }) => {
               </button>
             </div>
 
-            <button type="submit" className="btn-modern" style={{ marginTop: '1rem', height: '3.5rem', background: currentRole.gradient }}>
-              <LogIn size={20} /> Authorize Session
+            <button type="submit" className="btn-modern" style={{ marginTop: '1rem', height: '3.5rem', background: currentRole.gradient }} disabled={loading}>
+              <LogIn size={20} /> {loading ? 'Authorizing...' : 'Authorize Session'}
             </button>
           </form>
 
@@ -163,11 +164,6 @@ const Login: React.FC<LoginProps> = ({ role }) => {
              {role !== 'staff' && <Link to="/staff/login" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none', fontWeight: 700 }}>STAFF PORTAL</Link>}
              {role !== 'admin' && <Link to="/admin/login" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none', fontWeight: 700 }}>ADMIN ACCESS</Link>}
           </div>
-        </div>
-        
-        <div style={{ textAlign: 'center', marginTop: '2rem', opacity: 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          <Zap size={14} />
-          <span style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.1em' }}>SECURED BY SMARTQUEUE CORE</span>
         </div>
       </div>
     </div>

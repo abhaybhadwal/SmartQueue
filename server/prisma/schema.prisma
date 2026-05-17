@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model Service {
-  id          String    @id @default(uuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   counters    Counter[]
@@ -19,9 +19,9 @@ model Service {
 }
 
 model Counter {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  serviceId String
+  serviceId String   @db.ObjectId
   service   Service  @relation(fields: [serviceId], references: [id])
   status    String   @default("active") // active, inactive
   tokens    Token[]
@@ -30,14 +30,14 @@ model Counter {
 }
 
 model Token {
-  id          String    @id @default(uuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   number      Int
-  serviceId   String
+  serviceId   String    @db.ObjectId
   service     Service   @relation(fields: [serviceId], references: [id])
-  userId      String?
+  userId      String?   @db.ObjectId
   user        User?     @relation(fields: [userId], references: [id])
   phoneNumber String?   // For guest users or direct SMS updates
-  counterId   String?
+  counterId   String?   @db.ObjectId
   counter     Counter?  @relation(fields: [counterId], references: [id])
   status      String    @default("waiting") // waiting, serving, served, no-show
   issuedAt  DateTime  @default(now())
@@ -48,8 +48,8 @@ model Token {
 }
 
 model WaitTimeMetric {
-  id                 String   @id @default(uuid())
-  serviceId          String   @unique
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId          String   @unique @db.ObjectId
   service            Service  @relation(fields: [serviceId], references: [id])
   averageServiceTime Float    // in seconds
   totalTokensServed  Int
@@ -57,7 +57,7 @@ model WaitTimeMetric {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String?
   email        String   @unique
   phoneNumber  String?  @unique
@@ -68,4 +68,3 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
-

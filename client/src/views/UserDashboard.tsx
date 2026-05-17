@@ -13,10 +13,13 @@ import {
   Bell,
   TrendingUp,
   User,
-  ArrowUpRight
+  ArrowUpRight,
+  ArrowLeft,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
+import { API_BASE_URL } from '../config';
 
 interface ActiveToken {
   id: string;
@@ -38,7 +41,7 @@ const UserDashboard: React.FC = () => {
   
   const fetchMyTokens = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:3001/api/tokens/my', {
+      const res = await axios.get(`${API_BASE_URL}/api/tokens/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setActiveTokens(res.data);
