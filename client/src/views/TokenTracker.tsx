@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { socket } from '../socket';
 import { Clock, ArrowLeft, CheckCircle2, X, Zap } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
 import { API_BASE_URL } from '../config';
 
 interface Token {

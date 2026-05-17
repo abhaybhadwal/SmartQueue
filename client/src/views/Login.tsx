@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, LogIn, ArrowLeft, ShieldCheck, Briefcase, User as UserIcon, Zap, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, LogIn, ArrowLeft, ShieldCheck, Briefcase, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';

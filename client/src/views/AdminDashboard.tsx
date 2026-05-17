@@ -16,7 +16,6 @@ import {
   RefreshCw,
   ListRestart,
   Timer,
-  AlertTriangle,
   ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../AuthContext';

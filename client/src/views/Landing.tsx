@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Zap, Heart, Clock, Users, Globe, Smartphone, BarChart, Mail, Phone } from 'lucide-react';
+import { ArrowRight, Zap, Globe, Smartphone, BarChart, Mail, Phone } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Landing: React.FC = () => {
@@ -178,7 +178,7 @@ const Landing: React.FC = () => {
             <h4 style={{ fontWeight: 800, marginBottom: '1.5rem', fontSize: '0.9rem', color: 'white' }}>COMPANY</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
               <li style={{ cursor: 'pointer' }} onClick={() => scrollToSection('top')}>About Us</li>
-              <li style={{ cursor: 'pointer' }} onClick={() => navigate('/staff/login')} style={{ color: 'var(--warning)', fontWeight: 700 }}>Staff Portal</li>
+              <li style={{ cursor: 'pointer', color: 'var(--warning)', fontWeight: 700 }} onClick={() => navigate('/staff/login')}>Staff Portal</li>
               <li style={{ cursor: 'pointer' }} onClick={() => scrollToSection('top')}>Careers</li>
               <li style={{ cursor: 'pointer' }} onClick={() => scrollToSection('top')}>Newsroom</li>
               <li style={{ cursor: 'pointer' }} onClick={() => scrollToSection('contact')}>Contact</li>
