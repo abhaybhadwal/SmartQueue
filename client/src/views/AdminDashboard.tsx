@@ -76,7 +76,7 @@ interface Analytics {
 const AdminDashboard: React.FC = () => {
   const [data, setData] = useState<Analytics | null>(null);
   const [counters, setCounters] = useState<Counter[]>([]);
-  const [selectedCounterId, setSelectedCounterId] = useState<string>('');
+  const [selectedCounterId, setSelectedCounterId] = useState<string>(localStorage.getItem('staff_counter_id') || '');
   const [counterStatus, setCounterStatus] = useState<CounterStatus | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +170,10 @@ const AdminDashboard: React.FC = () => {
     fetchCounters();
     fetchServices();
     fetchUsers();
-  }, [fetchAnalytics, fetchCounters, fetchServices, fetchUsers]);
+    if (selectedCounterId) {
+      fetchCounterStatus(selectedCounterId);
+    }
+  }, [fetchAnalytics, fetchCounters, fetchServices, fetchUsers, selectedCounterId, fetchCounterStatus]);
 
   useEffect(() => {
     socket.on('queueUpdate', () => {
@@ -293,6 +296,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('staff_counter_id');
     logout();
     toast.success('Session terminated securely');
     navigate('/');
@@ -483,6 +487,16 @@ const AdminDashboard: React.FC = () => {
 
           <div className="admin-management-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
             <div className="flex flex-col gap-8">
+              {!selectedCounterId && user?.role === 'staff' && (
+                <div className="glass-card active-glow animate-pulse" style={{ padding: '2rem', background: 'rgba(217, 119, 6, 0.1)', border: '1px solid rgba(217, 119, 6, 0.2)', borderRadius: '1rem' }}>
+                  <h3 style={{ fontSize: '1.25rem', color: 'var(--warning)', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    📢 Station Activation Required
+                  </h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                    Welcome to the Staff Portal! To start calling and serving queue tokens, please click and select your assigned counter from the <strong>Operational Stations</strong> grid below.
+                  </p>
+                </div>
+              )}
               {/* Counter Grid Selection */}
               <div className="flex flex-col gap-6">
                 <div className="flex justify-between items-end flex-wrap gap-4">
@@ -521,6 +535,7 @@ const AdminDashboard: React.FC = () => {
                       className={`glass-card stagger-1 ${selectedCounterId === c.id ? 'active-glow' : ''}`}
                       onClick={() => {
                         setSelectedCounterId(c.id);
+                        localStorage.setItem('staff_counter_id', c.id);
                         fetchCounterStatus(c.id);
                       }}
                       style={{ 
