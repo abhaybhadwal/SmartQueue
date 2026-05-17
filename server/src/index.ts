@@ -45,50 +45,58 @@ async function sendSMS(phoneNumber: string, message: string) {
 }
 
 async function sendWelcomeEmail(email: string, name: string) {
-  const isPlaceholder = !process.env.SMTP_USER || 
-                        process.env.SMTP_USER === "your-email@gmail.com" || 
-                        process.env.SMTP_USER === "mock_user";
-
-  const sendMock = async () => {
-    const testAccount = await nodemailer.createTestAccount();
-    const testTransporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-
-    const info = await testTransporter.sendMail({
-      from: '"SmartQueue Onboarding" <welcome@smartqueue.com>',
-      to: email,
-      subject: "Welcome to SmartQueue!",
-      text: `Hi ${name || 'there'}, welcome to SmartQueue! Your account has been successfully verified.`,
-      html: `<h1>Welcome to SmartQueue, ${name || 'User'}!</h1><p>Your account has been successfully verified and you're ready to start queueing smarter.</p>`,
-    });
-
-    console.log("Welcome Message sent: %s", info.messageId);
-    console.log("Welcome Preview URL: %s", nodemailer.getTestMessageUrl(info));
-  };
-
-  if (isPlaceholder) {
-    await sendMock();
-    return;
-  }
-
   try {
-    await transporter.sendMail({
-      from: '"SmartQueue Onboarding" <welcome@smartqueue.com>',
-      to: email,
-      subject: "Welcome to SmartQueue!",
-      text: `Hi ${name || 'there'}, welcome to SmartQueue! Your account has been successfully verified.`,
-      html: `<h1>Welcome to SmartQueue, ${name || 'User'}!</h1><p>Your account has been successfully verified and you're ready to start queueing smarter.</p>`,
-    });
-  } catch (error: any) {
-    console.error('Welcome SMTP Error (falling back to mock):', error.message);
-    await sendMock();
+    const isPlaceholder = !process.env.SMTP_USER || 
+                          process.env.SMTP_USER === "your-email@gmail.com" || 
+                          process.env.SMTP_USER === "mock_user";
+
+    const sendMock = async () => {
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        const testTransporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+
+        const info = await testTransporter.sendMail({
+          from: '"SmartQueue Onboarding" <welcome@smartqueue.com>',
+          to: email,
+          subject: "Welcome to SmartQueue!",
+          text: `Hi ${name || 'there'}, welcome to SmartQueue! Your account has been successfully verified.`,
+          html: `<h1>Welcome to SmartQueue, ${name || 'User'}!</h1><p>Your account has been successfully verified and you're ready to start queueing smarter.</p>`,
+        });
+
+        console.log("Welcome Message sent: %s", info.messageId);
+        console.log("Welcome Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      } catch (mockError: any) {
+        console.error('Failed to send mock welcome email:', mockError.message);
+      }
+    };
+
+    if (isPlaceholder) {
+      await sendMock();
+      return;
+    }
+
+    try {
+      await transporter.sendMail({
+        from: '"SmartQueue Onboarding" <welcome@smartqueue.com>',
+        to: email,
+        subject: "Welcome to SmartQueue!",
+        text: `Hi ${name || 'there'}, welcome to SmartQueue! Your account has been successfully verified.`,
+        html: `<h1>Welcome to SmartQueue, ${name || 'User'}!</h1><p>Your account has been successfully verified and you're ready to start queueing smarter.</p>`,
+      });
+    } catch (error: any) {
+      console.error('Welcome SMTP Error (falling back to mock):', error.message);
+      await sendMock();
+    }
+  } catch (outerError: any) {
+    console.error('Failed to run welcome email function:', outerError.message);
   }
 }
 
@@ -182,12 +190,13 @@ app.post('/api/auth/signup', async (req, res) => {
       },
     });
 
-    // Send Welcome Email
-    await sendWelcomeEmail(email, name);
+// Send Welcome Email
+    sendWelcomeEmail(email, name).catch(err => console.error('Non-blocking welcome email failed:', err));
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
+    console.error('[SIGNUP ERROR]', error);
     res.status(500).json({ error: 'Failed to create user. Email might already exist.' });
   }
 });
