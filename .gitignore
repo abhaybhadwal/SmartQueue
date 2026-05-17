@@ -26,6 +26,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 *.pem
+nginx_config_template.txt
 
 # Editor
 .vscode/*
