@@ -290,9 +290,10 @@ app.post('/api/tokens', async (req, res) => {
     // Live SMS Update: Initial Confirmation
     if (finalPhone) {
       const waitMinutes = Math.round(waitTime / 60);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       await sendSMS(
         finalPhone, 
-        `SmartQueue: Token #${nextNumber} confirmed for ${token.service.name}. Est. wait: ${waitMinutes} mins. Track here: http://localhost:5173/token/${token.id}`
+        `SmartQueue: Token #${nextNumber} confirmed for ${token.service.name}. Est. wait: ${waitMinutes} mins. Track here: ${frontendUrl}/token/${token.id}`
       );
     }
 
@@ -307,10 +308,11 @@ app.post('/api/tokens', async (req, res) => {
 
 // Get user's active tokens
 app.get('/api/tokens/my', authenticateToken, async (req, res) => {
+  const authReq = req as AuthRequest;
   try {
     const tokens = await prisma.token.findMany({
       where: { 
-        userId: req.user?.id,
+        userId: authReq.user?.id,
         status: { in: ['waiting', 'serving'] }
       },
       include: {
@@ -350,7 +352,7 @@ app.get('/api/tokens/my', authenticateToken, async (req, res) => {
 // Get token details (for tracking)
 app.get('/api/tokens/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const token = await prisma.token.findUnique({
       where: { id },
       include: { service: true, counter: true },
@@ -382,7 +384,7 @@ app.get('/api/tokens/:id', async (req, res) => {
 // Admin/Staff: Get tokens for a specific counter/service
 app.get('/api/counters/:id/status', authenticateToken, authorizeRole(['admin', 'staff']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const counter = await prisma.counter.findUnique({
       where: { id },
       include: { service: true },
@@ -452,10 +454,11 @@ app.get('/api/users', authenticateToken, authorizeRole(['admin']), async (req, r
 
 // Update profile
 app.put('/api/users/profile', authenticateToken, async (req, res) => {
+  const authReq = req as AuthRequest;
   try {
     const { name, phoneNumber, profileImage } = req.body;
     const updatedUser = await prisma.user.update({
-      where: { id: req.user?.id },
+      where: { id: authReq.user?.id },
       data: { name, phoneNumber, profileImage },
     });
     
@@ -474,11 +477,12 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
 
 // Admin: Remove a user
 app.delete('/api/users/:id', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  const authReq = req as AuthRequest;
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Prevent self-deletion
-    if (id === req.user?.id) {
+    if (id === authReq.user?.id) {
       return res.status(400).json({ error: 'Cannot delete your own admin account.' });
     }
 
@@ -584,7 +588,7 @@ app.get('/api/counters', authenticateToken, authorizeRole(['admin', 'staff']), a
 // Admin/Staff: Call next token
 app.post('/api/counters/:id/call-next', authenticateToken, authorizeRole(['admin', 'staff']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const counter = await prisma.counter.findUnique({
       where: { id },
@@ -636,9 +640,9 @@ app.post('/api/counters/:id/call-next', authenticateToken, authorizeRole(['admin
 });
 
 // Admin/Staff: Mark as served
-app.post('/api/tokens/:id/served', authenticateToken, authorizeRole(['admin', 'staff']), async (req, res) => {
+app.post('/api/tokens/:id/served', authenticateToken, authorizeRole(['admin', 'staff']), async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const token = await prisma.token.findUnique({
       where: { id },
@@ -670,9 +674,9 @@ app.post('/api/tokens/:id/served', authenticateToken, authorizeRole(['admin', 's
 });
 
 // Admin/Staff: Mark as no-show
-app.post('/api/tokens/:id/no-show', authenticateToken, authorizeRole(['admin', 'staff']), async (req, res) => {
+app.post('/api/tokens/:id/no-show', authenticateToken, authorizeRole(['admin', 'staff']), async (req: AuthRequest, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const updatedToken = await prisma.token.update({
       where: { id },
