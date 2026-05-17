@@ -195,16 +195,27 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`[AUTH] Login attempt for: ${email}`);
+    
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      console.warn(`[AUTH] Login failed: User not found (${email})`);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      console.warn(`[AUTH] Login failed: Incorrect password for ${email}`);
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    console.log(`[AUTH] Login successful for: ${email} (Role: ${user.role})`);
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    console.error('[AUTH] Critical login error:', error);
+    res.status(500).json({ error: 'Login failed due to server error' });
   }
 });
 
