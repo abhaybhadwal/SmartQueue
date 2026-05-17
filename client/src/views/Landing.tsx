@@ -2,9 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Zap, Globe, Smartphone, BarChart, Mail, Phone } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import { useAuth } from '../AuthContext';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -30,8 +32,20 @@ const Landing: React.FC = () => {
           </div>
           <div className="flex items-center" style={{ gap: '1rem' }}>
             <ThemeToggle />
-            <button className="btn-glass" onClick={() => navigate('/login')}>Sign In</button>
-            <button className="btn-modern" onClick={() => navigate('/signup')} style={{ padding: '0.75rem 1.5rem' }}>Get Started</button>
+            {isAuthenticated && user ? (
+              <button 
+                className="btn-modern" 
+                onClick={() => navigate(user.role === 'admin' || user.role === 'staff' ? '/admin' : '/dashboard')}
+                style={{ padding: '0.75rem 1.5rem' }}
+              >
+                Go to Dashboard
+              </button>
+            ) : (
+              <>
+                <button className="btn-glass" onClick={() => navigate('/login')}>Sign In</button>
+                <button className="btn-modern" onClick={() => navigate('/signup')} style={{ padding: '0.75rem 1.5rem' }}>Get Started</button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -57,8 +71,12 @@ const Landing: React.FC = () => {
           </p>
 
           <div className="flex justify-center" style={{ gap: '1.5rem' }}>
-            <button className="btn-modern" onClick={() => navigate('/signup')} style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
-              Claim Your Spot <ArrowRight size={20} />
+            <button 
+              className="btn-modern" 
+              onClick={() => navigate(isAuthenticated && user ? (user.role === 'admin' || user.role === 'staff' ? '/admin' : '/dashboard') : '/signup')} 
+              style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}
+            >
+              {isAuthenticated ? 'Go to Dashboard' : 'Claim Your Spot'} <ArrowRight size={20} />
             </button>
             <button className="btn-glass" onClick={() => navigate('/services')} style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem' }}>
               How it Works

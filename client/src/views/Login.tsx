@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowLeft, ShieldCheck, Briefcase, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
@@ -16,7 +16,13 @@ const Login: React.FC<LoginProps> = ({ role }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(user.role === 'admin' || user.role === 'staff' ? '/admin' : '/dashboard');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const roleConfig = {
     user: {
