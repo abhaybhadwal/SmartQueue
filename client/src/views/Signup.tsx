@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, UserPlus, ArrowLeft, Zap, CheckCircle2, ShieldCheck, Key } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, ArrowLeft, Zap, CheckCircle2, ShieldCheck, Key, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
@@ -14,6 +14,7 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -136,14 +137,34 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
               <div style={{ position: 'relative' }}>
                 <Lock size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   placeholder="Create Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="btn-glass"
-                  style={{ width: '100%', paddingLeft: '3.5rem', textAlign: 'left', height: '3.5rem' }}
+                  style={{ width: '100%', paddingLeft: '3.5rem', paddingRight: '3.5rem', textAlign: 'left', height: '3.5rem' }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ 
+                    position: 'absolute', 
+                    right: '1.25rem', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    background: 'none', 
+                    border: 'none', 
+                    cursor: 'pointer', 
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'var(--text-muted)',
+                    opacity: 0.6
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <button type="submit" className="btn-modern" style={{ marginTop: '1rem', height: '3.5rem', background: role === 'staff' ? currentConfig.gradient : undefined }} disabled={loading}>
