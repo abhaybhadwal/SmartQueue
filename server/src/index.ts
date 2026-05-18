@@ -201,6 +201,75 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { idToken, role } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ error: 'Google ID Token is required' });
+    }
+
+    // Call Google's Token Info API to verify the token securely
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    const payload = await googleRes.json() as any;
+
+    if (payload.error || payload.error_description) {
+      console.warn('[GOOGLE AUTH] Google token verification failed:', payload.error_description || payload.error);
+      return res.status(401).json({ error: 'Google token verification failed' });
+    }
+
+    const email = payload.email;
+    const name = payload.name;
+    const picture = payload.picture;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Google account does not provide an email address' });
+    }
+
+    // Check if the user already exists
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      console.log(`[GOOGLE AUTH] Registering new user: ${email} (Role: ${role || 'user'})`);
+      
+      // Create random secure password since they use Google
+      const randomPassword = await bcrypt.hash(Math.random().toString(36), 10);
+      
+      user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: randomPassword,
+          profileImage: picture,
+          role: role || 'user'
+        }
+      });
+
+      // Send welcome email asynchronously
+      sendWelcomeEmail(email, name || 'Member').catch(err => console.error('Non-blocking welcome email failed:', err));
+    } else {
+      console.log(`[GOOGLE AUTH] Logging in existing user: ${email} (Role: ${user.role})`);
+      
+      // Update profile details if they've changed on Google
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          name: user.name || name,
+          profileImage: user.profileImage || picture
+        }
+      });
+    }
+
+    const localToken = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
+    res.json({ token: localToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage } });
+  } catch (error) {
+    console.error('[GOOGLE AUTH] Critical validation error:', error);
+    res.status(500).json({ error: 'Google authentication failed due to server error' });
+  }
+});
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
