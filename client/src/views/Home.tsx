@@ -42,6 +42,20 @@ const Home: React.FC = () => {
     return () => { isMounted = false; };
   }, []);
 
+  const loadServices = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/services`);
+      setServices(res.data);
+    } catch (err) {
+      console.error('Failed to fetch services', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
   useEffect(() => {
     socket.on('queueUpdate', () => {
       loadServices();
@@ -58,20 +72,6 @@ const Home: React.FC = () => {
       socket.off('tokenServed');
     };
   }, [loadServices]);
-
-  const loadServices = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/services`);
-      setServices(res.data);
-    } catch (err) {
-      console.error('Failed to fetch services', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
 
   const generateToken = async (serviceId: string) => {
     const phoneNumber = phoneNumbers[serviceId];
