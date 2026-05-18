@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import { API_BASE_URL } from '../config';
+import { socket } from '../socket';
 
 interface ActiveToken {
   id: string;
@@ -51,6 +52,23 @@ const UserDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchMyTokens();
+  }, [fetchMyTokens]);
+
+  useEffect(() => {
+    socket.on('queueUpdate', () => {
+      fetchMyTokens();
+    });
+    socket.on('tokenCalled', () => {
+      fetchMyTokens();
+    });
+    socket.on('tokenServed', () => {
+      fetchMyTokens();
+    });
+    return () => {
+      socket.off('queueUpdate');
+      socket.off('tokenCalled');
+      socket.off('tokenServed');
+    };
   }, [fetchMyTokens]);
 
   const handleLogout = () => {

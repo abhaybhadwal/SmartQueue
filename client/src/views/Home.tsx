@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import { API_BASE_URL } from '../config';
+import { socket } from '../socket';
 
 interface Service {
   id: string;
@@ -40,6 +41,23 @@ const Home: React.FC = () => {
     fetchData();
     return () => { isMounted = false; };
   }, []);
+
+  useEffect(() => {
+    socket.on('queueUpdate', () => {
+      loadServices();
+    });
+    socket.on('tokenCalled', () => {
+      loadServices();
+    });
+    socket.on('tokenServed', () => {
+      loadServices();
+    });
+    return () => {
+      socket.off('queueUpdate');
+      socket.off('tokenCalled');
+      socket.off('tokenServed');
+    };
+  }, [loadServices]);
 
   const loadServices = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
