@@ -177,7 +177,7 @@ async function updateAverageServiceTime(serviceId: string, actualTimeInSeconds: 
 // Auth Endpoints
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, gender } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -187,6 +187,7 @@ app.post('/api/auth/signup', async (req, res) => {
         email,
         password: hashedPassword,
         role: role || 'user',
+        gender: gender || null,
       },
     });
 
@@ -194,7 +195,7 @@ app.post('/api/auth/signup', async (req, res) => {
     sendWelcomeEmail(email, name).catch(err => console.error('Non-blocking welcome email failed:', err));
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, gender: user.gender } });
   } catch (error) {
     console.error('[SIGNUP ERROR]', error);
     res.status(500).json({ error: 'Failed to create user. Email might already exist.' });
@@ -263,7 +264,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const localToken = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token: localToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage } });
+    res.json({ token: localToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage, gender: user.gender } });
   } catch (error) {
     console.error('[GOOGLE AUTH] Critical validation error:', error);
     res.status(500).json({ error: 'Google authentication failed due to server error' });
@@ -290,7 +291,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     console.log(`[AUTH] Login successful for: ${email} (Role: ${user.role})`);
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, gender: user.gender } });
   } catch (error) {
     console.error('[AUTH] Critical login error:', error);
     res.status(500).json({ error: 'Login failed due to server error' });

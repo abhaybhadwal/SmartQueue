@@ -14,6 +14,7 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [gender, setGender] = useState('Male');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -82,7 +83,8 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
         name, 
         email, 
         password,
-        role: role
+        role: role,
+        gender
       });
       const { token, user } = res.data;
       login(token, user);
@@ -154,6 +156,38 @@ const Signup: React.FC<SignupProps> = ({ role }) => {
                   className="btn-glass"
                   style={{ width: '100%', paddingLeft: '3.5rem', textAlign: 'left', height: '3.5rem' }}
                 />
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <User size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} />
+                <select 
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  required
+                  className="btn-glass"
+                  style={{ 
+                    width: '100%', 
+                    paddingLeft: '3.5rem', 
+                    textAlign: 'left', 
+                    height: '3.5rem', 
+                    appearance: 'none', 
+                    WebkitAppearance: 'none',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid var(--glass-border)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    borderRadius: '8px'
+                  }}
+                >
+                  <option value="Male" style={{ background: '#18181b', color: 'white' }}>Male</option>
+                  <option value="Female" style={{ background: '#18181b', color: 'white' }}>Female</option>
+                  <option value="Other" style={{ background: '#18181b', color: 'white' }}>Other</option>
+                  <option value="Prefer not to say" style={{ background: '#18181b', color: 'white' }}>Prefer not to say</option>
+                </select>
+                <div style={{ position: 'absolute', right: '1.25rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.4, fontSize: '0.75rem' }}>
+                  ▼
+                </div>
               </div>
 
               <div style={{ position: 'relative' }}>
